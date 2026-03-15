@@ -4,8 +4,9 @@
  */
 
 // Pi Pico includes
+#include "pico/stdlib.h"
 #include "pico/multicore.h"
-
+#include "usb.h" 					// your existing USB/macro code
 #include "wifi/WifiDriver.h"		//ChatGPT: Added include for WifiDriver.h to use wifi_init_ap() function
 
 // GP2040 includes
@@ -40,14 +41,14 @@ void wifi_core1() {
     wifi_init_ap();
 
     while (true) {
-        cyw43_arch_poll();
-    	sleep_ms(10);
+        wifi_poll_loop();
     }
 
 }
 // ChatGPT line 37 - 47
 
 int main() {
+	stdio_init_all();
 	// Create GP2040 Main Core (core0), Core1 is dependent on Core0
 	gp2040Core0 = new GP2040();
 	gp2040Core1 = new GP2040Aux();

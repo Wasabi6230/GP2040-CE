@@ -19,6 +19,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
+          env:
+          PYTHONIOENCODING: utf-8
 
       # 3. Install CMake
       - name: Install CMake
@@ -36,11 +38,14 @@ jobs:
 
       # 6. Generate fsdata.c from www/ folder
       - name: Generate embedded web UI
-        run: python tools/makefsdata.py www src/wifi/fsdata.c
+        run: |
+          mkdir -p src/wifi
+          python tools/makefsdata.py www src/wifi/fsdata.c
 
       # 7. Create build folder
       - name: Configure CMake
         run: |
+          rm -rf build
           mkdir build
           cd build
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DPICO_BOARD=pico_w -DPICO_SDK_PATH="${{ github.workspace }}/pico-sdk" ..
@@ -57,3 +62,10 @@ jobs:
         with:
           name: GP2040-CE-WiFi-UF2
           path: build/*.uf2
+
+      - name: Cache Pico SDK
+        uses: actions/cache@v3
+        with:
+          path: pico-sdk
+          key: pico-sdk-${{ hashFiles('pico-sdk/**') }}
+          restore-keys: pico-sdk-
