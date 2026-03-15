@@ -17,5 +17,5 @@ void wifi_init_ap() {
 
     printf("WiFi AP started\n");
 
-    httpd_init();
+    start_gp2040_web_server();
 }

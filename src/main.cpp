@@ -40,7 +40,8 @@ void wifi_core1() {
     wifi_init_ap();
 
     while (true) {
-        sleep_ms(100);
+        cyw43_arch_poll();
+    	sleep_ms(10);
     }
 
 }
