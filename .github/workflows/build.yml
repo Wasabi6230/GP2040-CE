@@ -1,0 +1,59 @@
+name: Build GP2040-CE Wi-Fi Firmware
+
+on:
+  push:
+    branches: [ wifi-config ]
+  pull_request:
+    branches: [ wifi-config ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      # 1. Checkout your repo
+      - uses: actions/checkout@v3
+
+      # 2. Install Python
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      # 3. Install CMake
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v1
+        with:
+          cmake-version: '3.26.4'
+
+      # 4. Install Ninja
+      - name: Install Ninja
+        run: choco install ninja -y
+
+      # 5. Setup Pico SDK
+      - name: Clone Pico SDK
+        run: git clone -b master https://github.com/raspberrypi/pico-sdk.git ${{ github.workspace }}/pico-sdk
+
+      # 6. Generate fsdata.c from www/ folder
+      - name: Generate embedded web UI
+        run: python tools/makefsdata.py www src/wifi/fsdata.c
+
+      # 7. Create build folder
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DPICO_BOARD=pico_w -DPICO_SDK_PATH="${{ github.workspace }}/pico-sdk" ..
+
+      # 8. Build firmware
+      - name: Build Firmware
+        run: |
+          cd build
+          ninja
+
+      # 9. Upload built firmware as artifact
+      - name: Upload firmware
+        uses: actions/upload-artifact@v3
+        with:
+          name: GP2040-CE-WiFi-UF2
+          path: build/*.uf2
