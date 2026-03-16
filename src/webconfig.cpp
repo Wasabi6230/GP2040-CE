@@ -47,6 +47,8 @@ const static uint32_t rebootDelayMs = 500;
 static string http_post_uri;
 static char http_post_payload[LWIP_HTTPD_POST_MAX_PAYLOAD_LEN];
 static uint16_t http_post_payload_len = 0;
+static std::string g_http_custom_response;
+static std::string g_http_redirect_response;
 
 // Don't inline this function, we do not want to consume stack space in the calling function
 template <typename T, typename K>
@@ -233,8 +235,6 @@ struct DataAndStatusCode
 // **** WEB SERVER Overrides and Special Functionality ****
 int set_file_data(fs_file* file, const DataAndStatusCode& dataAndStatusCode)
 {
-    std::string* returnData = new std::string();
-
     const char* statusCodeStr = "";
     switch (dataAndStatusCode.statusCode)
     {
@@ -243,27 +243,25 @@ int set_file_data(fs_file* file, const DataAndStatusCode& dataAndStatusCode)
         case HttpStatusCode::_500: statusCodeStr = "500 Internal Server Error"; break;
     }
 
-    returnData->clear();
-    returnData->append("HTTP/1.0 ");
-    returnData->append(statusCodeStr);
-    returnData->append("\r\n");
-    returnData->append(
+    g_http_custom_response.clear();
+    g_http_custom_response.append("HTTP/1.0 ");
+    g_http_custom_response.append(statusCodeStr);
+    g_http_custom_response.append("\r\n");
+    g_http_custom_response.append(
         "Server: GP2040-CE " GP2040VERSION "\r\n"
         "Content-Type: application/json\r\n"
         "Access-Control-Allow-Origin: *\r\n"
+        "Cache-Control: no-cache\r\n"
         "Content-Length: "
     );
+    g_http_custom_response.append(std::to_string(dataAndStatusCode.data.length()));
+    g_http_custom_response.append("\r\n\r\n");
+    g_http_custom_response.append(dataAndStatusCode.data);
 
-    returnData->append(std::to_string(dataAndStatusCode.data.length()));
-    returnData->append("\r\n\r\n");
-    returnData->append(dataAndStatusCode.data);
-    
-    file->data = returnData->c_str();
-    file->len = returnData->size();
+    file->data = g_http_custom_response.c_str();
+    file->len = static_cast<int>(g_http_custom_response.size());
     file->index = 0;
-    file->http_header_included = true;
-    file->pextension = returnData;  // store for cleanup
-    file->is_custom_file = 1;
+    file->flags = FS_FILE_FLAGS_HEADER_INCLUDED | FS_FILE_FLAGS_CUSTOM;
 
     return 1;
 }
@@ -277,22 +275,19 @@ int set_file_data(fs_file *file, string&& data)
 
 static int set_redirect_file(struct fs_file* file, const char* location)
 {
-    std::string* returnData = new std::string();
+    g_http_redirect_response.clear();
+    g_http_redirect_response.append("HTTP/1.0 302 Found\r\n");
+    g_http_redirect_response.append("Location: ");
+    g_http_redirect_response.append(location);
+    g_http_redirect_response.append("\r\n");
+    g_http_redirect_response.append("Cache-Control: no-cache\r\n");
+    g_http_redirect_response.append("Content-Length: 0\r\n");
+    g_http_redirect_response.append("\r\n");
 
-    returnData->append("HTTP/1.0 302 Found\r\n");
-    returnData->append("Location: ");
-    returnData->append(location);
-    returnData->append("\r\n");
-    returnData->append("Cache-Control: no-cache\r\n");
-    returnData->append("Content-Length: 0\r\n");
-    returnData->append("\r\n");
-
-    file->data = returnData->c_str();
-    file->len = returnData->size();
+    file->data = g_http_redirect_response.c_str();
+    file->len = static_cast<int>(g_http_redirect_response.size());
     file->index = 0;
-    file->http_header_included = true;
-    file->pextension = returnData;
-    file->is_custom_file = 1;
+    file->flags = FS_FILE_FLAGS_HEADER_INCLUDED | FS_FILE_FLAGS_CUSTOM;
 
     return 1;
 }
@@ -2798,9 +2793,5 @@ extern "C" int fs_open_custom(struct fs_file *file, const char *name)
 
 extern "C" void fs_close_custom(struct fs_file *file)
 {
-    if (file && file->is_custom_file && file->pextension)
-    {
-        delete static_cast<std::string*>(file->pextension);
-        file->pextension = NULL;
-    }
+    LWIP_UNUSED_ARG(file);
 }
