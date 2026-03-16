@@ -270,7 +270,7 @@ src/usbdriver.cpp
 src/usbhostmanager.cpp
 src/config_legacy.cpp
 src/config_utils.cpp
-#src/webconfig.cpp #Goodbye USB
+src/webconfig.cpp
 src/addons/analog.cpp
 src/addons/board_led.cpp
 src/addons/bootsel_button.cpp
@@ -324,6 +324,7 @@ pico_lwip_http                              #ChatGPT
 pico_bootsel_via_double_reset
 tinyusb_host
 tinyusb_pico_pio_usb
+tinyusb_device
 CRC32
 FlashPROM
 ADS1219
