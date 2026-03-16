@@ -51,7 +51,8 @@ jobs:
           restore-keys: pico-sdk-
 
       #Cache Picotool Build
-      - uses: actions/cache@v3
+      - name: Cache Picotool Build
+        uses: actions/cache@v3
         with:
           path: build/_deps/picotool
           key: picotool-${{ hashFiles('pico-sdk/**') }}
@@ -75,7 +76,13 @@ jobs:
           New-Item -ItemType Directory -Path build
           Set-Location build
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DPICO_BOARD=pico_w -DPICO_SDK_PATH="${{ github.workspace }}/pico-sdk" ..
-          
+       
+      # Fix nanopb Python environment
+      - name: Fix nanopb Python environment
+        run: |
+          build\venv\Scripts\python -m pip install --upgrade pip
+          build\venv\Scripts\python -m pip install setuptools
+
       # 8. Build firmware
       - name: Build Firmware
         run: |
