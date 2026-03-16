@@ -13,8 +13,8 @@ function (compile_proto)
         DEPENDS ${CMAKE_SOURCE_DIR}/lib/nanopb/extra/requirements.txt
         COMMAND ${Python3_EXECUTABLE} -m venv ${VENV}
         COMMAND ${VENV_BIN_DIR}/python -m ensurepip --upgrade
-        COMMAND ${VENV_BIN_DIR}/python -m pip install --upgrade pip setuptools wheel
-        COMMAND ${VENV_BIN_DIR}/python -m pip --disable-pip-version-check install protobuf>=3.19 grpcio-tools==1.71.0
+        COMMAND ${VENV_BIN_DIR}/python -m pip install --upgrade pip "setuptools<82" wheel
+        COMMAND ${VENV_BIN_DIR}/python -m pip --disable-pip-version-check install "protobuf>=3.19" "grpcio-tools==1.71.0" "setuptools<82"
         COMMAND ${VENV_BIN_DIR}/python -c "import pkg_resources; print('pkg_resources OK')"
         COMMAND ${VENV_BIN_DIR}/python -m pip freeze > ${VENV_FILE}
         OUTPUT ${VENV_FILE}
