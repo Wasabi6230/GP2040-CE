@@ -1,35 +1,47 @@
 import os
 import sys
 
-if len(sys.argv) != 3:
-    print("Usage: python makefsdata.py <input_dir> <output_file>")
-    sys.exit(1)
-
-input_dir = sys.argv[1]
-output_file = sys.argv[2]
-
-def byte_to_c_array(byte_data):
-    # Convert bytes to comma-separated C values
-    return ','.join(str(b) for b in byte_data)
+output = sys.argv[2] if len(sys.argv) > 2 else "src/wifi/fsdata.c"
+folder = sys.argv[1] if len(sys.argv) > 1 else "www"
 
 files = []
 
-for root, _, filenames in os.walk(input_dir):
-    for name in filenames:
-        path = os.path.join(root, name)
-        key = os.path.relpath(path, input_dir).replace("\\", "/")
-        with open(path, "rb") as f:   # <-- binary mode
-            content = f.read()
-        files.append((key, content))
+def escape_bytes(data):
+    return ", ".join(str(b) for b in data)
 
-with open(output_file, "w", encoding="utf-8") as f:
-    f.write("#include <stdint.h>\n\n")
-    f.write("typedef struct {\n")
-    f.write("    const char *name;\n")
-    f.write("    const uint8_t *content;\n")
-    f.write("    unsigned int length;\n")
-    f.write("} fs_file_t;\n\n")
-    f.write(f"const fs_file_t fs_files[{len(files)}] = {{\n")
-    for name, content in files:
-        f.write(f'    {{"{name}", (const uint8_t[]){{{byte_to_c_array(content)}}}, {len(content)}}},\n')
-    f.write("};\n")
+for root, dirs, filenames in os.walk(folder):
+    for f in filenames:
+        path = os.path.join(root, f)
+        rel_path = os.path.relpath(path, folder).replace("\\", "/")
+        with open(path, "rb") as file:
+            content = file.read()
+        files.append((rel_path, content))
+
+with open(output, "w", encoding="utf-8") as f:
+    f.write('#include "lwip/apps/fs.h"\n\n')
+    f.write('/* Auto-generated fsdata.c */\n\n')
+
+    prev_name = None
+    prev_file = None
+
+    for name, data in files:
+        name_var = f"file_{name.replace('/', '_').replace('.', '_')}_name"
+        file_var = f"file_{name.replace('/', '_').replace('.', '_')}_data"
+
+        # Write file name
+        f.write(f'static const unsigned char {name_var}[] = "{name}";\n')
+
+        # Write file content
+        f.write(f'static const unsigned char {file_var}[] = {{ {escape_bytes(data)} }};\n')
+
+        # Write fsdata_file struct
+        f.write(f'static const struct fsdata_file {file_var}_struct = {{\n')
+        f.write(f'    {prev_file},\n' if prev_file else '    NULL,\n')
+        f.write(f'    {name_var}, {file_var}, {len(data)},\n')
+        f.write('    FS_FILE_FLAGS_HEADER_INCLUDED\n')
+        f.write('};\n\n')
+
+        prev_file = f"{file_var}_struct"
+
+    # Set FS_ROOT
+    f.write(f'const struct fsdata_file *FS_ROOT = {prev_file};\n')

@@ -40,7 +40,7 @@ jobs:
 
       # 5. Setup Pico SDK
       - name: Clone Pico SDK
-        run: git clone -b master https://github.com/raspberrypi/pico-sdk.git ${{ github.workspace }}/pico-sdk
+        run: git clone -b master --recurse-submodules https://github.com/raspberrypi/pico-sdk.git ${{ github.workspace }}/pico-sdk
 
       # Cache the Pico SDK to speed up subsequent builds
       - name: Cache Pico SDK
