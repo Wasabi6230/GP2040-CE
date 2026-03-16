@@ -23,6 +23,12 @@ jobs:
           python-version: '3.x'
         env:
           PYTHONIOENCODING: utf-8
+          
+      # Python Dependencies for build scripts
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install setuptools wheel protobuf grpcio grpcio-tools
 
       # 3. Install CMake
       - name: Install CMake
@@ -61,12 +67,6 @@ jobs:
       - name: Generate embedded web UI
         run: python tools/makefsdata.py www src/wifi/fsdata.c
 
-      # Python Dependencies for build scripts
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install setuptools wheel protobuf grpcio grpcio-tools
-
       # 7. Create build folder
       - name: Configure CMake
         run: |
@@ -75,18 +75,12 @@ jobs:
           }
           New-Item -ItemType Directory -Path build
           Set-Location build
-          cmake -G Ninja ^
-          -DCMAKE_BUILD_TYPE=Release ^
-          -DPICO_BOARD=pico_w ^
-          -DPICO_SDK_PATH="${{ github.workspace }}/pico-sdk" ^
-          -DPython3_EXECUTABLE="python" ^
-          ..
-       
-      # Fix nanopb Python environment
-      - name: Fix nanopb Python environment
-        run: |
-          .\build\venv\Scripts\python -m pip install --upgrade pip
-          .\build\venv\Scripts\python -m pip install setuptools
+          cmake -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DPICO_BOARD=pico_w `
+            -DPICO_SDK_PATH="${{ github.workspace }}/pico-sdk" `
+            -DPython3_EXECUTABLE=python `
+            ..
 
       # 8. Build firmware
       - name: Build Firmware
