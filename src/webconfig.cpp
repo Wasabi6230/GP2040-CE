@@ -30,7 +30,7 @@
 //#include "rndis.h"        //Goodbye USB
 extern "C" {
 #include "lwip/apps/fs.h"
-#include "fscustom.h"
+//#include "fscustom.h"
 #include "lwip/apps/httpd.h"
 #include "lwip/def.h"
 #include "lwip/mem.h"
