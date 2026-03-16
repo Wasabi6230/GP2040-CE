@@ -37,7 +37,7 @@
 #include "pico/time.h"
 #include "hardware/adc.h"
 
-#include "rndis.h"
+//#include "rndis.h"		//Goodbye USB
 
 // TinyUSB
 #include "tusb.h"
@@ -130,7 +130,7 @@ void GP2040::setup() {
 	const BootAction bootAction = getBootAction();
 	switch (bootAction) {
 		case BootAction::ENTER_WEBCONFIG_MODE:
-			inputMode = INPUT_MODE_CONFIG;
+			//inputMode = INPUT_MODE_CONFIG;		//WiFi Config should be always available
 			break;
 		case BootAction::ENTER_USB_MODE:
 			reset_usb_boot(0, 0);
@@ -291,9 +291,10 @@ void GP2040::run() {
 	// Initialize our USB manager
 	USBHostManager::getInstance().start();
 
-	if (configMode == true ) {
-		rndis_init();
-	}
+	// Goodbye USB
+	//if (configMode == true ) {
+	//	rndis_init();
+	//}
 
 	while (1) { // LOOP
 		this->getReinitGamepad(gamepad);
@@ -311,12 +312,13 @@ void GP2040::run() {
 		USBHostManager::getInstance().process();
 
 		// Config Loop (Web-Config skips Core0 add-ons)
-		if (configMode == true) {
-			inputDriver->process(gamepad);
-			rebootHotkeys.process(gamepad, configMode);
-			checkSaveRebootState();
-			continue;
-		}
+		// Goodbye USB
+		//if (configMode == true) {
+		//	inputDriver->process(gamepad);
+		//	rebootHotkeys.process(gamepad, configMode);
+		//	checkSaveRebootState();
+		//	continue;
+		//}
 
 		// Pre-Process add-ons for MPGS
 		addons.PreprocessAddons();
