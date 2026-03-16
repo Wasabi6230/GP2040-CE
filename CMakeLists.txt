@@ -319,7 +319,6 @@ pico_set_program_version(GP2040-CE ${GIT_REPO_VERSION})
 target_link_libraries(${PROJECT_NAME}
 pico_stdlib
 pico_multicore
-gp2040-ce wifi
 pico_cyw43_arch_lwip_threadsafe_background  #ChatGPT
 pico_lwip_http                              #ChatGPT
 pico_bootsel_via_double_reset
@@ -393,4 +392,3 @@ if (NOT (DEFINED ENV(CI)) AND (EXISTS ${CMAKE_SOURCE_DIR}/modules/Custom.cmake))
   message(STATUS "Found custom script.")
 	include(${CMAKE_SOURCE_DIR}/modules/Custom.cmake)
 endif()
-

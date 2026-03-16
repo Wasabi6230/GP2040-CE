@@ -6,6 +6,8 @@
 #include "storagemanager.h"
 #include "usbhostmanager.h"
 
+#include "wifi/WifiDriver.h"
+
 #include "addons/board_led.h"  // Add-Ons
 #include "addons/buzzerspeaker.h"
 #include "addons/display.h"
@@ -46,6 +48,8 @@ void GP2040Aux::setup() {
 	addons.LoadAddon(new DRV8833RumbleAddon());
 	addons.LoadAddon(new ReactiveLEDAddon());
 
+	wifi_init_ap();
+
 	// Ready to sync Core0 and Core1
 	isReady = true;
 }
@@ -60,5 +64,6 @@ void GP2040Aux::run() {
 		if ( inputDriver != nullptr ) {
 			inputDriver->processAux();
 		}
+		wifi_task();
 	}
 }

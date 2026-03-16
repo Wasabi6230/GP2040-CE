@@ -33,18 +33,18 @@ def make_http_header(path: str, content_length: int) -> bytes:
     )
     return header.encode("ascii")
 
-for root, _, filenames in os.walk(folder):
-    for filename in sorted(filenames):
+for root, dirnames, filenames in os.walk(folder):
+    dirnames.sort()
+    filenames.sort()
+
+    for filename in filenames:
         full_path = os.path.join(root, filename)
         rel_path = os.path.relpath(full_path, folder).replace("\\", "/")
 
         with open(full_path, "rb") as f:
             content = f.read()
 
-        # Main file path
         web_path = "/" + rel_path
-
-        # Default route support: also expose / for index.html
         aliases = [web_path]
         if rel_path == "index.html":
             aliases.append("/")

@@ -37,8 +37,7 @@ void wifi_task() {
 
     cyw43_arch_poll();
 
-    // lwIP timers
+    cyw43_arch_poll();
     sys_check_timeouts();
-
-    sleep_ms(1);
+    sleep_ms(2);
 }

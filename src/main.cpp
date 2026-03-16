@@ -35,18 +35,6 @@ void core1() {
 	gp2040Core1->run();
 }
 
-//ChatGPT: Added wifi_core1() function to initialize WiFi AP and keep it running in Core 1
-void wifi_core1() {
-
-    wifi_init_ap();
-
-    while (true) {
-        wifi_task();
-    }
-
-}
-// ChatGPT line 37 - 47
-
 int main() {
 	stdio_init_all();
 	// Create GP2040 Main Core (core0), Core1 is dependent on Core0
@@ -58,8 +46,6 @@ int main() {
 
 	// Create GP2040 Thread for Core1
 	multicore_launch_core1(core1);
-	// ChatGPT: Create GP2040 Thread for WiFi AP on Core1
-	multicore_launch_core1(wifi_core1);
 
 	// Sync Core0 and Core1
 	while(gp2040Core1->ready() == false ) {
