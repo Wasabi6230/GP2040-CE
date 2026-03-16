@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-          env:
+        env:
           PYTHONIOENCODING: utf-8
 
       # 3. Install CMake
@@ -33,6 +33,10 @@ jobs:
       # 4. Install Ninja
       - name: Install Ninja
         run: choco install ninja -y
+
+      # Install picotool
+      - name: Install picotool
+        run: choco install picotool -y
 
       # Install ARM GCC toolchain
       - name: Install ARM GCC toolchain
@@ -75,4 +79,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: GP2040-CE-WiFi-UF2
-          path: build/*.uf2
+          path: build/**/*.uf2
