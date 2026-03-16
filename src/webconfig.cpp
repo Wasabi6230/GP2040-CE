@@ -27,7 +27,7 @@
 
 // HTTPD Includes
 #include <ArduinoJson.h>
-#include "rndis.h"
+//#include "rndis.h"        //Goodbye USB
 #include "fs.h"
 #include "fscustom.h"
 #include "fsdata.h"
@@ -2478,7 +2478,7 @@ std::string getHeldPins()
 
     // Monitor pins for 5 seconds or until released
     while (!_abortGetHeldPins && (isAnyPinHeld || (getMillis() - startTime) < 5000)) {
-        rndis_task();
+        //rndis_task();
 
         uint32_t newState = ~gpio_get_all();
         if (isAnyPinHeld && newState == oldState) break; // Pins released
