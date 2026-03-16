@@ -34,10 +34,6 @@ jobs:
       - name: Install Ninja
         run: choco install ninja -y
 
-      # Install picotool
-      - name: Install picotool
-        run: choco install picotool -y
-
       # Install ARM GCC toolchain
       - name: Install ARM GCC toolchain
         run: choco install gcc-arm-embedded -y
