@@ -2793,5 +2793,7 @@ extern "C" int fs_open_custom(struct fs_file *file, const char *name)
 
 extern "C" void fs_close_custom(struct fs_file *file)
 {
+
     LWIP_UNUSED_ARG(file);
+    
 }
