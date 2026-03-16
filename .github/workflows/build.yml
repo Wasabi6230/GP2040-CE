@@ -82,8 +82,19 @@ jobs:
             -DPython3_EXECUTABLE=python `
             ..
 
+      - name: Ensure nanopb Python deps exist
+        shell: pwsh
+        run: |
+          if (Test-Path build/venv/Scripts/python.exe) {
+              ./build/venv/Scripts/python.exe -m pip install --upgrade pip
+              ./build/venv/Scripts/python.exe -m pip install setuptools
+          } else {
+              Write-Host "venv not created yet (normal on first configure)"
+          }
+
       # 8. Build firmware
       - name: Build Firmware
+        shell: pwsh
         run: |
           cd build
           ninja
