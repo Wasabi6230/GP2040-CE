@@ -40,7 +40,7 @@ static const dhcp_config_t dhcp_config = {
     .port   = 67,
     .dns    = INIT_IP4(192, 168, 4, 1),
     "gp2040",
-    sizeof(entries) / sizeof(entries[0])
+    sizeof(entries) / sizeof(entries[0]),
     entries
 };
 
