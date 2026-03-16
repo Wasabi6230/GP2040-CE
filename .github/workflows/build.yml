@@ -80,8 +80,8 @@ jobs:
       # Fix nanopb Python environment
       - name: Fix nanopb Python environment
         run: |
-          build\venv\Scripts\python -m pip install --upgrade pip
-          build\venv\Scripts\python -m pip install setuptools
+          .\build\venv\Scripts\python -m pip install --upgrade pip
+          .\build\venv\Scripts\python -m pip install setuptools
 
       # 8. Build firmware
       - name: Build Firmware
