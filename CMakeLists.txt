@@ -190,10 +190,15 @@ add_compile_definitions(PICO_STACK_SIZE=0x1000)
 add_compile_definitions(LWIP_HTTPD=1)
 add_compile_definitions(LWIP_HTTPD_DYNAMIC_HEADERS=0)
 
+add_compile_definitions(LWIP_HTTPD_CUSTOM_FILES=1)
+add_compile_definitions(LWIP_HTTPD_SUPPORT_POST=1)
+add_compile_definitions(HTTPD_USE_CUSTOM_FSDATA=1)
+add_compile_definitions(HTTPD_FSDATA_FILE=\"src/wifi/fsdata_custom.c\")
+
 add_executable(${PROJECT_NAME}
 src/main.cpp
 src/wifi/WifiDriver.cpp     #ChatGPT
-src/wifi/fsdata.c           #ChatGPT
+#src/wifi/fsdata.c           #ChatGPT
 src/gp2040.cpp
 src/gp2040aux.cpp
 src/gamepad.cpp

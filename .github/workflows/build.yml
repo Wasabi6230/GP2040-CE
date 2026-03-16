@@ -69,7 +69,7 @@ jobs:
 
       # 6. Generate fsdata.c from www/ folder
       - name: Generate embedded web UI
-        run: python tools/makefsdata.py www src/wifi/fsdata.c
+        run: python tools/makefsdata.py www src/wifi/fsdata_custom.c
 
       - name: Configure CMake
         shell: pwsh
