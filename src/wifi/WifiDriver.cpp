@@ -1,3 +1,23 @@
+#include "WifiDriver.h"
+
+#include "pico/stdlib.h"
+#include "pico/cyw43_arch.h"
+
+#include <cstdio>
+
+extern "C" {
+#include "lwip/apps/httpd.h"
+#include "lwip/timeouts.h"
+#include "lwip/ip4_addr.h"
+#include "lwip/ip_addr.h"
+#include "lwip/netif.h"
+#include "lwip/err.h"
+#include "lwip/def.h"
+
+#include "dhserver.h"
+#include "dnserver.h"
+}
+
 #define INIT_IP4(a, b, c, d) { PP_HTONL(LWIP_MAKEU32(a, b, c, d)) }
 
 static bool wifi_ready = false;
@@ -42,7 +62,6 @@ void wifi_init_ap() {
         CYW43_AUTH_WPA2_AES_PSK
     );
 
-    // Set AP interface address
     netif_set_addr(netif_default, &ap_ip, &ap_netmask, &ap_router);
 
     while (dhserv_init(&dhcp_config) != ERR_OK) {
