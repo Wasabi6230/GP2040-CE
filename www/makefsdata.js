@@ -11,7 +11,7 @@ const root = path.dirname(__filename).replace(path.normalize('www'), '');
 const rootwww = path.dirname(__filename);
 const buildPath = path.join(rootwww, 'build');
 
-const fsdataPath = path.normalize(path.join(root, 'lib/httpd/fsdata.c'));
+const fsdataPath = path.normalize(path.join(root, 'src/wifi/fsdata_custom.c'));
 
 // These are the same content types that are used by the original makefsdata
 const contentTypes = new Map([
