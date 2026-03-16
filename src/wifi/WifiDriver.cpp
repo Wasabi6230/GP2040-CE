@@ -1,19 +1,34 @@
-#include "WifiDriver.h"
-#include "pico/stdlib.h"
-#include "pico/cyw43_arch.h"
-#include "lwip/apps/httpd.h"
-#include "lwip/timeouts.h"
-#include "lwip/ip4_addr.h"
-
-// These headers come from the TinyUSB networking support you already build
-#include "dhserver.h"
-#include "dnserver.h"
+#define INIT_IP4(a, b, c, d) { PP_HTONL(LWIP_MAKEU32(a, b, c, d)) }
 
 static bool wifi_ready = false;
-static ip_addr_t ap_gw;
-static ip4_addr_t ap_mask;
-static dhcp_server_t dhcp_server;
-static dns_server_t dns_server;
+
+// AP IP settings
+static const ip4_addr_t ap_ip      = INIT_IP4(192, 168, 4, 1);
+static const ip4_addr_t ap_netmask = INIT_IP4(255, 255, 255, 0);
+static const ip4_addr_t ap_router  = INIT_IP4(192, 168, 4, 1);
+
+// DHCP lease table
+static dhcp_entry_t entries[] = {
+    {{0}, INIT_IP4(192, 168, 4, 2), 24 * 60 * 60},
+    {{0}, INIT_IP4(192, 168, 4, 3), 24 * 60 * 60},
+    {{0}, INIT_IP4(192, 168, 4, 4), 24 * 60 * 60},
+    {{0}, INIT_IP4(192, 168, 4, 5), 24 * 60 * 60},
+};
+
+static const dhcp_config_t dhcp_config = {
+    .router = INIT_IP4(192, 168, 4, 1),
+    .port   = 67,
+    .dns    = INIT_IP4(192, 168, 4, 1),
+    "gp2040",
+    TU_ARRAY_SIZE(entries),
+    entries
+};
+
+static bool dns_query_proc(const char *name, ip4_addr_t *addr) {
+    LWIP_UNUSED_ARG(name);
+    *addr = ap_ip;
+    return true;
+}
 
 void wifi_init_ap() {
     if (cyw43_arch_init()) {
@@ -27,19 +42,16 @@ void wifi_init_ap() {
         CYW43_AUTH_WPA2_AES_PSK
     );
 
-#if LWIP_IPV6
-    #define IP4(x) ((x).u_addr.ip4)
-#else
-    #define IP4(x) (x)
-#endif
+    // Set AP interface address
+    netif_set_addr(netif_default, &ap_ip, &ap_netmask, &ap_router);
 
-    IP4(ap_gw).addr = PP_HTONL(CYW43_DEFAULT_IP_AP_ADDRESS);
-    IP4(ap_mask).addr = PP_HTONL(CYW43_DEFAULT_IP_MASK);
+    while (dhserv_init(&dhcp_config) != ERR_OK) {
+        sleep_ms(10);
+    }
 
-#undef IP4
-
-    dhcp_server_init(&dhcp_server, &ap_gw, &ap_mask);
-    dns_server_init(&dns_server, &ap_gw);
+    while (dnserv_init(IP_ADDR_ANY, 53, dns_query_proc) != ERR_OK) {
+        sleep_ms(10);
+    }
 
     httpd_init();
 
