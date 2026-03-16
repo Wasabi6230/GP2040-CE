@@ -188,6 +188,7 @@ endif()
 add_compile_definitions(PICO_STACK_SIZE=0x1000)
 
 add_compile_definitions(LWIP_HTTPD=1)
+add_compile_definitions(LWIP_HTTPD_DYNAMIC_HEADERS=0)
 
 add_executable(${PROJECT_NAME}
 src/main.cpp
