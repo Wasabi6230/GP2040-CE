@@ -50,9 +50,21 @@ jobs:
           key: pico-sdk-${{ hashFiles('pico-sdk/**') }}
           restore-keys: pico-sdk-
 
+      #Cache Picotool Build
+      - uses: actions/cache@v3
+        with:
+          path: build/_deps/picotool
+          key: picotool-${{ hashFiles('pico-sdk/**') }}
+
       # 6. Generate fsdata.c from www/ folder
       - name: Generate embedded web UI
         run: python tools/makefsdata.py www src/wifi/fsdata.c
+
+      # Python Dependencies for build scripts
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install setuptools wheel protobuf grpcio grpcio-tools
 
       # 7. Create build folder
       - name: Configure CMake
