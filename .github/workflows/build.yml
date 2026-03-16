@@ -75,7 +75,12 @@ jobs:
           }
           New-Item -ItemType Directory -Path build
           Set-Location build
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DPICO_BOARD=pico_w -DPICO_SDK_PATH="${{ github.workspace }}/pico-sdk" ..
+          cmake -G Ninja ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -DPICO_BOARD=pico_w ^
+          -DPICO_SDK_PATH="${{ github.workspace }}/pico-sdk" ^
+          -DPython3_EXECUTABLE="python" ^
+          ..
        
       # Fix nanopb Python environment
       - name: Fix nanopb Python environment
