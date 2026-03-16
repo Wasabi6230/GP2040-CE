@@ -28,9 +28,8 @@
 // HTTPD Includes
 #include <ArduinoJson.h>
 //#include "rndis.h"        //Goodbye USB
-#include "fs.h"
+#include "lwip/apps/fs.h"
 #include "fscustom.h"
-#include "fsdata.h"
 #include "lwip/apps/httpd.h"
 #include "lwip/def.h"
 #include "lwip/mem.h"
@@ -39,8 +38,6 @@
 #define PATH_CGI_ACTION "/cgi/action"
 
 #define LWIP_HTTPD_POST_MAX_PAYLOAD_LEN (1024 * 16)
-
-extern struct fsdata_file file__index_html[];
 
 const static char* spaPaths[] = { "/backup", "/display-config", "/led-config", "/pin-mapping", "/settings", "/reset-settings", "/add-ons", "/custom-theme", "/macro", "/peripheral-mapping" };
 const static char* excludePaths[] = { "/css", "/images", "/js", "/static" };
@@ -261,7 +258,7 @@ int set_file_data(fs_file* file, const DataAndStatusCode& dataAndStatusCode)
     
     file->data = returnData->c_str();
     file->len = returnData->size();
-    file->index = file->len;
+    file->index = 0;
     file->http_header_included = true;
     file->pextension = returnData;  // store for cleanup
     file->is_custom_file = 1;
@@ -274,6 +271,28 @@ int set_file_data(fs_file *file, string&& data)
     if (data.empty())
         return 0;
     return set_file_data(file, DataAndStatusCode(std::move(data), HttpStatusCode::_200));
+}
+
+static int set_redirect_file(struct fs_file* file, const char* location)
+{
+    std::string* returnData = new std::string();
+
+    returnData->append("HTTP/1.0 302 Found\r\n");
+    returnData->append("Location: ");
+    returnData->append(location);
+    returnData->append("\r\n");
+    returnData->append("Cache-Control: no-cache\r\n");
+    returnData->append("Content-Length: 0\r\n");
+    returnData->append("\r\n");
+
+    file->data = returnData->c_str();
+    file->len = returnData->size();
+    file->index = 0;
+    file->http_header_included = true;
+    file->pextension = returnData;
+    file->is_custom_file = 1;
+
+    return 1;
 }
 
 DynamicJsonDocument get_post_data()
@@ -352,22 +371,22 @@ err_t httpd_post_begin(void *connection, const char *uri, const char *http_reque
 err_t httpd_post_receive_data(void *connection, struct pbuf *p)
 {
     LWIP_UNUSED_ARG(connection);
-
+    struct pbuf *q = p;
     // Cache the received data to http_post_payload
-    while (p != NULL)
+    while (q != NULL)
     {
-        if (http_post_payload_len + p->len <= LWIP_HTTPD_POST_MAX_PAYLOAD_LEN)
+        if (http_post_payload_len + q->len <= LWIP_HTTPD_POST_MAX_PAYLOAD_LEN)
         {
-            MEMCPY(http_post_payload + http_post_payload_len, p->payload, p->len);
-            http_post_payload_len += p->len;
+            MEMCPY(http_post_payload + http_post_payload_len, q->payload, q->len);
+            http_post_payload_len += q->len;
         }
-        else // Buffer overflow
+        else
         {
             http_post_payload_len = 0xffff;
             break;
         }
 
-        p = p->next;
+        q = q->next;
     }
 
     // Need to release memory here or will leak
@@ -2756,21 +2775,19 @@ int fs_open_custom(struct fs_file *file, const char *name)
         }
     }
 
-    for (const char* excludePath : excludePaths)
-        if (strcmp(excludePath, name) == 0)
-            return 0;
-
     for (const char* spaPath : spaPaths)
     {
         if (strcmp(spaPath, name) == 0)
         {
-            file->data = (const char *)file__index_html[0].data;
-            file->len = file__index_html[0].len;
-            file->index = file__index_html[0].len;
-            file->http_header_included = file__index_html[0].http_header_included;
-            file->pextension = NULL;
-            file->is_custom_file = 0;
-            return 1;
+            return set_redirect_file(file, "/");
+        }
+    }
+
+    for (const char* excludePath : excludePaths)
+    {
+        if (strncmp(name, excludePath, strlen(excludePath)) == 0)
+        {
+            return 0;
         }
     }
 
