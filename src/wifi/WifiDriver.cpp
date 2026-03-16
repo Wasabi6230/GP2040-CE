@@ -6,8 +6,8 @@
 #include "lwip/ip4_addr.h"
 
 // These headers come from the TinyUSB networking support you already build
-#include "dhserver.h"
-#include "dnserver.h"
+#include "dhcpserver.h"
+#include "dnsserver.h"
 
 static bool wifi_ready = false;
 static ip_addr_t ap_gw;
