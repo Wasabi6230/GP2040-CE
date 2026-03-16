@@ -34,9 +34,6 @@ void wifi_task() {
 
     if (!wifi_ready)
         return;
-
-    cyw43_arch_poll();
-
     cyw43_arch_poll();
     sys_check_timeouts();
     sleep_ms(2);
