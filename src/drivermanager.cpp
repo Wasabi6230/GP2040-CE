@@ -1,6 +1,6 @@
 #include "drivermanager.h"
 
-#include "drivers/net/NetDriver.h"
+// #include "drivers/net/NetDriver.h" //Goodbye USB
 #include "drivers/astro/AstroDriver.h"
 #include "drivers/egret/EgretDriver.h"
 #include "drivers/hid/HIDDriver.h"
@@ -22,9 +22,10 @@
 
 void DriverManager::setup(InputMode mode) {
     switch (mode) {
-        case INPUT_MODE_CONFIG:
-            driver = new NetDriver();
-            break;
+        //Goodbye USB
+        //case INPUT_MODE_CONFIG:
+        //    driver = new NetDriver();
+        //    break;
         case INPUT_MODE_ASTRO:
             driver = new AstroDriver();
             break;

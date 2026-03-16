@@ -213,7 +213,7 @@ src/drivers/hid/HIDDriver.cpp
 src/drivers/keyboard/KeyboardDriver.cpp
 src/drivers/mdmini/MDMiniDriver.cpp
 src/drivers/neogeo/NeoGeoDriver.cpp
-src/drivers/net/NetDriver.cpp
+#src/drivers/net/NetDriver.cpp          #Goodbye USB 
 src/drivers/pcengine/PCEngineDriver.cpp
 src/drivers/ps3/PS3Driver.cpp
 src/drivers/ps4/PS4Auth.cpp

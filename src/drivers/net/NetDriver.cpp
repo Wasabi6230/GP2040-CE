@@ -1,4 +1,4 @@
-#include "drivers/net/NetDriver.h"
+//#include "drivers/net/NetDriver.h" //Goodbye USB
 #include "drivers/shared/driverhelper.h"
 #include "class/net/net_device.h"
 #include "rndis.h"
