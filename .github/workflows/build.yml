@@ -12,7 +12,9 @@ jobs:
 
     steps:
       # 1. Checkout your repo
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       # 2. Install Python
       - name: Setup Python
@@ -31,6 +33,10 @@ jobs:
       # 4. Install Ninja
       - name: Install Ninja
         run: choco install ninja -y
+
+      # Install ARM GCC toolchain
+      - name: Install ARM GCC toolchain
+        run: choco install gcc-arm-embedded -y
 
       # 5. Setup Pico SDK
       - name: Clone Pico SDK
