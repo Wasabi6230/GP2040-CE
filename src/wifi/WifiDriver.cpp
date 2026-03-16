@@ -1,4 +1,4 @@
-#include "wifi/WifiDriver.h"
+#include "WifiDriver.h"
 
 #include "pico/stdlib.h"
 #include "pico/cyw43_arch.h"

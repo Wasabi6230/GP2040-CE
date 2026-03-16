@@ -6,8 +6,6 @@
 // Pi Pico includes
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
-#include "usb.h" 					// your existing USB/macro code
-#include "wifi/WifiDriver.h"		//ChatGPT: Added include for WifiDriver.h to use wifi_init_ap() function
 
 // GP2040 includes
 #include "gp2040.h"
