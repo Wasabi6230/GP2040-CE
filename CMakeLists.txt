@@ -326,6 +326,7 @@ pico_stdlib
 pico_multicore
 pico_cyw43_arch_lwip_threadsafe_background  #ChatGPT
 pico_lwip_http                              #ChatGPT
+lwip_port
 pico_bootsel_via_double_reset
 tinyusb_host
 tinyusb_pico_pio_usb
