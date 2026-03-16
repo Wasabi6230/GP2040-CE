@@ -20,7 +20,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.12'
         env:
           PYTHONIOENCODING: utf-8
           
@@ -50,7 +50,7 @@ jobs:
 
       # Cache the Pico SDK to speed up subsequent builds
       - name: Cache Pico SDK
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: pico-sdk
           key: pico-sdk-${{ hashFiles('pico-sdk/**') }}
@@ -58,7 +58,7 @@ jobs:
 
       #Cache Picotool Build
       - name: Cache Picotool Build
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: build/_deps/picotool
           key: picotool-${{ hashFiles('pico-sdk/**') }}
@@ -81,16 +81,6 @@ jobs:
             -DPICO_SDK_PATH="${{ github.workspace }}/pico-sdk" `
             -DPython3_EXECUTABLE=python `
             ..
-
-      - name: Ensure nanopb Python deps exist
-        shell: pwsh
-        run: |
-          if (Test-Path build/venv/Scripts/python.exe) {
-              ./build/venv/Scripts/python.exe -m pip install --upgrade pip
-              ./build/venv/Scripts/python.exe -m pip install setuptools
-          } else {
-              Write-Host "venv not created yet (normal on first configure)"
-          }
 
       # 8. Build firmware
       - name: Build Firmware
