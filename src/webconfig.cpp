@@ -28,11 +28,13 @@
 // HTTPD Includes
 #include <ArduinoJson.h>
 //#include "rndis.h"        //Goodbye USB
+extern "C" {
 #include "lwip/apps/fs.h"
 #include "fscustom.h"
 #include "lwip/apps/httpd.h"
 #include "lwip/def.h"
 #include "lwip/mem.h"
+}
 #include "addons/input_macro.h"
 
 #define PATH_CGI_ACTION "/cgi/action"
@@ -346,7 +348,7 @@ void load_hotkey(const HotkeyEntry* hotkey, DynamicJsonDocument& doc, const stri
 }
 
 // LWIP callback on HTTP POST to validate the URI
-err_t httpd_post_begin(void *connection, const char *uri, const char *http_request,
+extern "C" err_t httpd_post_begin(void *connection, const char *uri, const char *http_request,
                        uint16_t http_request_len, int content_len, char *response_uri,
                        uint16_t response_uri_len, uint8_t *post_auto_wnd)
 {
@@ -368,7 +370,7 @@ err_t httpd_post_begin(void *connection, const char *uri, const char *http_reque
 }
 
 // LWIP callback on HTTP POST to for receiving payload
-err_t httpd_post_receive_data(void *connection, struct pbuf *p)
+extern "C" err_t httpd_post_receive_data(void *connection, struct pbuf *p)
 {
     LWIP_UNUSED_ARG(connection);
     struct pbuf *q = p;
@@ -401,7 +403,7 @@ err_t httpd_post_receive_data(void *connection, struct pbuf *p)
 }
 
 // LWIP callback to set the HTTP POST response_uri, which can then be looked up via the fs_custom callbacks
-void httpd_post_finished(void *connection, char *response_uri, uint16_t response_uri_len)
+extern "C" void httpd_post_finished(void *connection, char *response_uri, uint16_t response_uri_len)
 {
     LWIP_UNUSED_ARG(connection);
 
@@ -2757,7 +2759,7 @@ static const std::pair<const char*, HandlerFuncStatusCodePtr> handlerFuncsWithSt
     { "/api/setConfig", setConfig },
 };
 
-int fs_open_custom(struct fs_file *file, const char *name)
+extern "C" int fs_open_custom(struct fs_file *file, const char *name)
 {
     for (const auto& handlerFunc : handlerFuncs)
     {
@@ -2794,7 +2796,7 @@ int fs_open_custom(struct fs_file *file, const char *name)
     return 0;
 }
 
-void fs_close_custom(struct fs_file *file)
+extern "C" void fs_close_custom(struct fs_file *file)
 {
     if (file && file->is_custom_file && file->pextension)
     {
