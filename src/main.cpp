@@ -41,7 +41,7 @@ void wifi_core1() {
     wifi_init_ap();
 
     while (true) {
-        wifi_poll_loop();
+        wifi_task();
     }
 
 }

@@ -187,9 +187,12 @@ endif()
 # We want a larger stack of 4kb per core instead of the default 2kb
 add_compile_definitions(PICO_STACK_SIZE=0x1000)
 
+add_compile_definitions(LWIP_HTTPD=1)
+
 add_executable(${PROJECT_NAME}
 src/main.cpp
 src/wifi/WifiDriver.cpp     #ChatGPT
+src/wifi/fsdata.c           #ChatGPT
 src/gp2040.cpp
 src/gp2040aux.cpp
 src/gamepad.cpp
