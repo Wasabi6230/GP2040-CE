@@ -270,7 +270,7 @@ src/usbdriver.cpp
 src/usbhostmanager.cpp
 src/config_legacy.cpp
 src/config_utils.cpp
-src/webconfig.cpp
+#src/webconfig.cpp #Goodbye USB
 src/addons/analog.cpp
 src/addons/board_led.cpp
 src/addons/bootsel_button.cpp
@@ -331,7 +331,7 @@ ADS1256
 NeoPico
 OneBitDisplay
 ArduinoJson
-rndis
+#rndis #Goodbye USB
 hardware_adc
 hardware_pwm
 PicoPeripherals
