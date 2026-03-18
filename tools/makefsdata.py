@@ -4,6 +4,13 @@ import mimetypes
 
 output = sys.argv[2] if len(sys.argv) > 2 else "lib/httpd/fsdata.c"
 folder = sys.argv[1] if len(sys.argv) > 1 else "www"
+resolved_output = os.path.abspath(output)
+
+print(f"sys.argv={sys.argv}")
+print(f"resolved output path={resolved_output}")
+
+if resolved_output.replace("\\", "/").endswith("src/wifi/fsdata.c"):
+    raise RuntimeError(f"refusing to generate deprecated fsdata path: {resolved_output}")
 
 files = []
 
