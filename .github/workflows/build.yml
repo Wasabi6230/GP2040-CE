@@ -72,6 +72,16 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Clean fsdata paths before configure
+        shell: pwsh
+        run: |
+          if (Test-Path src/wifi/fsdata.c) {
+            Remove-Item src/wifi/fsdata.c -Force
+          }
+          if (Test-Path lib/httpd/fsdata.c) {
+            Remove-Item lib/httpd/fsdata.c -Force
+          }
+
       - name: Configure CMake
         shell: pwsh
         run: |
@@ -89,6 +99,26 @@ jobs:
             -DCMAKE_MAKE_PROGRAM="C:/ProgramData/chocolatey/bin/ninja.exe" `
             -DPython3_EXECUTABLE=python `
             ..
+
+      - name: Verify fsdata after configure
+        shell: pwsh
+        run: |
+          if (-not (Test-Path lib/httpd/fsdata.c)) {
+            throw "lib/httpd/fsdata.c was not generated"
+          }
+          if (Test-Path src/wifi/fsdata.c) {
+            throw "src/wifi/fsdata.c should not exist"
+          }
+
+      - name: Clean and verify fsdata before build
+        shell: pwsh
+        run: |
+          if (Test-Path src/wifi/fsdata.c) {
+            Remove-Item src/wifi/fsdata.c -Force
+          }
+          if (-not (Test-Path lib/httpd/fsdata.c)) {
+            throw "lib/httpd/fsdata.c is required before build"
+          }
 
       # 8. Build firmware
       - name: Build Firmware
