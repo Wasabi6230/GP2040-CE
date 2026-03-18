@@ -2,103 +2,91 @@ name: Build GP2040-CE Wi-Fi Firmware
 
 on:
   push:
-    branches: [ wifi-config ]
+    branches: [wifi-config]
   pull_request:
-    branches: [ wifi-config ]
+    branches: [wifi-config]
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: Release
+  GP2040_BOARDCONFIG: PicoW
 
 jobs:
+  call-node-workflow:
+    uses: ./.github/workflows/node.js.yml
+
   build:
-    runs-on: windows-latest
+    needs: call-node-workflow
+    runs-on: ubuntu-22.04
 
     steps:
-      # 1. Checkout your repo
-      - uses: actions/checkout@v4
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v2
         with:
+          cmake-version: "3.31.x"
+
+      - name: Verify cmake
+        run: cmake --version
+
+      - name: Checkout GP2040-CE
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
           submodules: recursive
 
-      # 2. Install Python
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: Setup GNU Arm Embedded Toolchain
+        uses: carlosperate/arm-none-eabi-gcc-action@v1.11.1
+
+      - name: Checkout pico-sdk/2.2.0
+        uses: actions/checkout@v4
         with:
-          python-version: '3.12'
-        env:
-          PYTHONIOENCODING: utf-8
-          
-      # Python Dependencies for build scripts
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install setuptools wheel protobuf grpcio grpcio-tools
-
-      # 3. Install CMake
-      - name: Install CMake
-        uses: jwlawson/actions-setup-cmake@v1
-        with:
-          cmake-version: '3.26.4'
-
-      - name: Install build tools
-        shell: pwsh
-        run: |
-          choco install ninja -y
-          choco install gcc-arm-embedded -y
-
-          "C:\ProgramData\chocolatey\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-          Get-Command ninja
-          Get-Command arm-none-eabi-gcc
-          Get-Command arm-none-eabi-g++
-
-      # 5. Setup Pico SDK
-      - name: Clone Pico SDK
-        run: git clone -b master --recurse-submodules https://github.com/raspberrypi/pico-sdk.git ${{ github.workspace }}/pico-sdk
-
-      # Cache the Pico SDK to speed up subsequent builds
-      - name: Cache Pico SDK
-        uses: actions/cache@v4
-        with:
+          repository: raspberrypi/pico-sdk
+          ref: 2.2.0
           path: pico-sdk
-          key: pico-sdk-${{ hashFiles('pico-sdk/**') }}
-          restore-keys: pico-sdk-
 
-      #Cache Picotool Build
-      - name: Cache Picotool Build
-        uses: actions/cache@v4
+      - name: Checkout pico-sdk submodules
+        working-directory: ${{ github.workspace }}/pico-sdk
+        run: git submodule update --init
+
+      - name: Download embedded web UI artifact
+        uses: actions/download-artifact@v4
         with:
-          path: build/_deps/picotool
-          key: picotool-${{ hashFiles('pico-sdk/**') }}
+          name: fsData
+          path: ${{ github.workspace }}/src/wifi/
 
-      # 6. Generate fsdata.c from www/ folder
-      #- name: Generate embedded web UI
-      #  run: python tools/makefsdata.py www src/wifi/fsdata_custom.c
+      - name: Verify embedded web UI
+        run: test -f "${{ github.workspace }}/src/wifi/fsdata_custom.c"
+
+      - name: Get core count
+        id: core_count
+        run: echo "count=$(nproc)" >> "$GITHUB_OUTPUT"
 
       - name: Configure CMake
-        shell: pwsh
-        run: |
-          if (Test-Path build) {
-            Remove-Item build -Recurse -Force
-          }
-          New-Item -ItemType Directory -Path build
-          Set-Location build
+        run: >-
+          PICO_SDK_PATH=${{ github.workspace }}/pico-sdk
+          GP2040_BOARDCONFIG=${{ env.GP2040_BOARDCONFIG }}
+          SKIP_WEBBUILD=TRUE
+          cmake -B ${{ github.workspace }}/build
+          -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
 
-          cmake -G Ninja `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DPICO_BOARD=pico_w `
-            -DPICO_SDK_PATH="${{ github.workspace }}/pico-sdk" `
-            -DPICO_TOOLCHAIN_PATH="C:/ProgramData/chocolatey/bin" `
-            -DCMAKE_MAKE_PROGRAM="C:/ProgramData/chocolatey/bin/ninja.exe" `
-            -DPython3_EXECUTABLE=python `
-            ..
+      - name: Build firmware
+        run: >-
+          GP2040_BOARDCONFIG=${{ env.GP2040_BOARDCONFIG }}
+          cmake --build ${{ github.workspace }}/build
+          --config ${{ env.BUILD_TYPE }}
+          --parallel ${{ steps.core_count.outputs.count }}
 
-      # 8. Build firmware
-      - name: Build Firmware
-        shell: pwsh
-        run: |
-          cd build
-          ninja
-
-      # 9. Upload built firmware as artifact
-      - name: Upload firmware
+      - name: Upload UF2 artifact
         uses: actions/upload-artifact@v4
         with:
           name: GP2040-CE-WiFi-UF2
-          path: build/**/*.uf2
+          path: ${{ github.workspace }}/build/GP2040-CE_*_${{ env.GP2040_BOARDCONFIG }}.uf2
+          if-no-files-found: error
+
+      - name: Upload ELF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GP2040-CE-WiFi-ELF
+          path: ${{ github.workspace }}/build/GP2040-CE_*_${{ env.GP2040_BOARDCONFIG }}.elf
+          if-no-files-found: error

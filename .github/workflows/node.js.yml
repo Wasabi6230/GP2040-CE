@@ -12,26 +12,29 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v6.0.1
+      - uses: actions/checkout@v4
 
-    - name: Use Node.js
-      uses: actions/setup-node@v6.1.0
-      with:
-        node-version: '20.x'
-        cache: 'npm'
-        cache-dependency-path: www/package-lock.json
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: www/package-lock.json
 
-    - name: clean install
-      working-directory: ${{github.workspace}}/www
-      run: npm ci
+      - name: clean install
+        working-directory: ${{ github.workspace }}/www
+        run: npm ci
 
-    - name: Build WWW
-      working-directory: ${{github.workspace}}/www
-      run: CI=false npm run build --if-present
+      - name: Build WWW
+        working-directory: ${{ github.workspace }}/www
+        run: CI=false npm run build --if-present
 
-    - name: Upload www Artifact
-      uses: actions/upload-artifact@v6.0.0
-      with:
-        name: fsData
-        path: ${{github.workspace}}/lib/httpd/fsdata.c
-        if-no-files-found: error
+      - name: Verify generated embedded web UI
+        run: test -f "${{ github.workspace }}/src/wifi/fsdata_custom.c"
+
+      - name: Upload www Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fsData
+          path: ${{ github.workspace }}/src/wifi/fsdata_custom.c
+          if-no-files-found: error
