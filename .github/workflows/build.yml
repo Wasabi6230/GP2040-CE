@@ -154,3 +154,4 @@ jobs:
         with:
           name: GP2040-CE-WiFi-UF2
           path: build/**/*.uf2
+      # push
