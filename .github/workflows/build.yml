@@ -100,6 +100,27 @@ jobs:
             -DPython3_EXECUTABLE=python `
             ..
 
+      - name: Show remaining fsdata references
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse -File | Select-String -Pattern 'src/wifi/fsdata.c|lib/httpd/fsdata.c|tools/makefsdata.py|makefsdata|fsdata_custom.c|copy_if_different' | ForEach-Object {
+            "$($_.Path):$($_.LineNumber): $($_.Line)"
+          }
+
+      - name: Show fsdata files after configure
+        shell: pwsh
+        run: |
+          Write-Host "lib/httpd/fsdata.c exists: $(Test-Path lib/httpd/fsdata.c)"
+          if (Test-Path lib/httpd/fsdata.c) {
+            Write-Host "--- lib/httpd/fsdata.c ---"
+            Get-Content lib/httpd/fsdata.c -TotalCount 5
+          }
+          Write-Host "src/wifi/fsdata.c exists: $(Test-Path src/wifi/fsdata.c)"
+          if (Test-Path src/wifi/fsdata.c) {
+            Write-Host "--- src/wifi/fsdata.c ---"
+            Get-Content src/wifi/fsdata.c -TotalCount 5
+          }
+
       - name: Verify fsdata after configure
         shell: pwsh
         run: |
@@ -108,13 +129,6 @@ jobs:
           }
           if (Test-Path src/wifi/fsdata.c) {
             throw "src/wifi/fsdata.c should not exist"
-          }
-
-      - name: Show remaining fsdata references
-        shell: pwsh
-        run: |
-          Get-ChildItem -Recurse -File | Select-String -Pattern 'src/wifi/fsdata.c|tools/makefsdata.py|makefsdata.py|fsdata_custom.c' | ForEach-Object {
-            "$($_.Path):$($_.LineNumber): $($_.Line)"
           }
 
       - name: Clean and verify fsdata before build
