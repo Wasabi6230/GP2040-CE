@@ -67,14 +67,13 @@ jobs:
           path: build/_deps/picotool
           key: picotool-${{ hashFiles('pico-sdk/**') }}
 
-      # 6. Generate fsdata.c from www/ folder
-      - name: Generate embedded web UI
-        run: python tools/makefsdata.py www src/wifi/fsdata.c
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Configure CMake
         shell: pwsh
-        env:
-          SKIP_WEBBUILD: TRUE
         run: |
           if (Test-Path build) {
             Remove-Item build -Recurse -Force
