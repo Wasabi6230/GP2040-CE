@@ -15,10 +15,11 @@ function (compile_proto)
         COMMAND ${VENV_BIN_DIR}/python -m ensurepip --upgrade
         COMMAND ${VENV_BIN_DIR}/python -m pip install --upgrade pip wheel
         COMMAND ${VENV_BIN_DIR}/python -m pip --disable-pip-version-check install -r ${CMAKE_SOURCE_DIR}/lib/nanopb/extra/requirements.txt
-        COMMAND ${VENV_BIN_DIR}/python -c "import pkg_resources; print('pkg_resources OK')"
+        COMMAND ${VENV_BIN_DIR}/python -c "import pkg_resources"
         COMMAND ${VENV_BIN_DIR}/python -m pip freeze > ${VENV_FILE}
         OUTPUT ${VENV_FILE}
         COMMENT "Setting up Python Virtual Environment"
+        VERBATIM
     )
 
 	set(NANOPB_GENERATOR ${CMAKE_SOURCE_DIR}/lib/nanopb/generator/nanopb_generator.py)
@@ -43,5 +44,6 @@ function (compile_proto)
 			${CMAKE_SOURCE_DIR}/proto/config.proto
 		OUTPUT ${PROTO_OUTPUT_DIR}/config.pb.c ${PROTO_OUTPUT_DIR}/config.pb.h ${PROTO_OUTPUT_DIR}/enums.pb.c ${PROTO_OUTPUT_DIR}/enums.pb.h
 		COMMENT "Compiling enums.proto and config.proto"
+		VERBATIM
 	)
 endfunction()
