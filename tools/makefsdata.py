@@ -2,7 +2,7 @@ import os
 import sys
 import mimetypes
 
-output = sys.argv[2] if len(sys.argv) > 2 else "src/wifi/fsdata.c"
+output = sys.argv[2] if len(sys.argv) > 2 else "lib/httpd/fsdata.c"
 folder = sys.argv[1] if len(sys.argv) > 1 else "www"
 
 files = []

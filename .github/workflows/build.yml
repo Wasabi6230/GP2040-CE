@@ -110,6 +110,13 @@ jobs:
             throw "src/wifi/fsdata.c should not exist"
           }
 
+      - name: Show remaining fsdata references
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse -File | Select-String -Pattern 'src/wifi/fsdata.c|tools/makefsdata.py|makefsdata.py|fsdata_custom.c' | ForEach-Object {
+            "$($_.Path):$($_.LineNumber): $($_.Line)"
+          }
+
       - name: Clean and verify fsdata before build
         shell: pwsh
         run: |
