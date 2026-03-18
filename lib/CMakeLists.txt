@@ -2,7 +2,7 @@ add_subdirectory(ADS1219)
 add_subdirectory(ADS1256)
 add_subdirectory(CRC32)
 add_subdirectory(FlashPROM)
-#add_subdirectory(httpd) #we using Pico's built in httpd
+add_subdirectory(httpd)
 add_subdirectory(lwip-port)
 add_subdirectory(nanopb)
 add_subdirectory(NeoPico)

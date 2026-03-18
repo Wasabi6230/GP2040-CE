@@ -73,6 +73,8 @@ jobs:
 
       - name: Configure CMake
         shell: pwsh
+        env:
+          SKIP_WEBBUILD: TRUE
         run: |
           if (Test-Path build) {
             Remove-Item build -Recurse -Force
