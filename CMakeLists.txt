@@ -136,6 +136,13 @@ else()
       if(NOT NPM_BUILD_RESULT EQUAL "0")
         message(FATAL_ERROR "npm run build failed with ${NPM_BUILD_RESULT}")
       endif()
+      execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                      ${CMAKE_CURRENT_SOURCE_DIR}/lib/httpd/fsdata.c
+                      ${CMAKE_CURRENT_SOURCE_DIR}/src/wifi/fsdata.c
+                      RESULT_VARIABLE COPY_FSDATA_RESULT)
+      if(NOT COPY_FSDATA_RESULT EQUAL "0")
+        message(FATAL_ERROR "copying lib/httpd/fsdata.c to src/wifi/fsdata.c failed with ${COPY_FSDATA_RESULT}")
+      endif()
     endif()
   endif()
 endif()
@@ -193,7 +200,6 @@ add_compile_definitions(LWIP_HTTPD_DYNAMIC_HEADERS=0)
 add_executable(${PROJECT_NAME}
 src/main.cpp
 src/wifi/WifiDriver.cpp     #ChatGPT
-src/wifi/fsdata.c           #ChatGPT
 src/gp2040.cpp
 src/gp2040aux.cpp
 src/gamepad.cpp
@@ -320,7 +326,7 @@ target_link_libraries(${PROJECT_NAME}
 pico_stdlib
 pico_multicore
 pico_cyw43_arch_lwip_threadsafe_background  #ChatGPT
-pico_lwip_http                              #ChatGPT
+httpd
 pico_bootsel_via_double_reset
 tinyusb_host
 tinyusb_pico_pio_usb

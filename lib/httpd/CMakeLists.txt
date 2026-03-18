@@ -1,6 +1,5 @@
 add_library(httpd
 fs.c
-fsdata.c
 ${PICO_SDK_PATH}/lib/lwip/src/apps/http/httpd.c
 )
 target_include_directories(httpd INTERFACE 
