@@ -139,11 +139,20 @@ else()
       if(NOT NPM_BUILD_RESULT EQUAL "0")
         message(FATAL_ERROR "npm run build failed with ${NPM_BUILD_RESULT}")
       endif()
+<<<<<<< codex/implement-gp2040-web-ui-over-wi-fi-ief4gp
       if(NOT EXISTS "${PROJECT_SOURCE_DIR}/lib/httpd/fsdata.c")
         message(FATAL_ERROR "npm run build completed but lib/httpd/fsdata.c was not generated")
       endif()
       if(EXISTS "${PROJECT_SOURCE_DIR}/src/wifi/fsdata.c")
         message(FATAL_ERROR "deprecated src/wifi/fsdata.c exists; remove stale fsdata output so the firmware uses lib/httpd/fsdata.c only")
+=======
+      execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                      ${CMAKE_CURRENT_SOURCE_DIR}/lib/httpd/fsdata.c
+                      ${CMAKE_CURRENT_SOURCE_DIR}/src/wifi/fsdata.c
+                      RESULT_VARIABLE COPY_FSDATA_RESULT)
+      if(NOT COPY_FSDATA_RESULT EQUAL "0")
+        message(FATAL_ERROR "copying lib/httpd/fsdata.c to src/wifi/fsdata.c failed with ${COPY_FSDATA_RESULT}")
+>>>>>>> wifi-config-recover-p10.4
       endif()
     endif()
   endif()
