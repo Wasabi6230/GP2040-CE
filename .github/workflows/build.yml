@@ -2,7 +2,7 @@ name: Build GP2040-CE Wi-Fi Firmware
 
 on:
   push:
-  branches:
+    branches:
       - wifi-config
       - wifi-config-recover-p10.4
   pull_request:
