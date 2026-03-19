@@ -4,8 +4,6 @@
 #include "pico/cyw43_arch.h"
 
 #include "lwip/apps/httpd.h"
-#include "lwip/ip4_addr.h"
-#include "lwip/netif.h"
 #include "lwip/timeouts.h"
 
 #include "fs.h"
@@ -13,28 +11,6 @@
 #include <stdio.h>
 
 static bool wifi_ready = false;
-
-static void log_network_interfaces() {
-    const struct netif* netif = netif_list;
-
-    if (netif == nullptr) {
-        printf("[wifi] no lwIP netif registered yet; expected AP IP is 192.168.4.1\n");
-        return;
-    }
-
-    while (netif != nullptr) {
-        printf(
-            "[wifi] netif %c%c%u ip=%s gw=%s mask=%s\n",
-            netif->name[0],
-            netif->name[1],
-            netif->num,
-            ip4addr_ntoa(netif_ip4_addr(netif)),
-            ip4addr_ntoa(netif_ip4_gw(netif)),
-            ip4addr_ntoa(netif_ip4_netmask(netif))
-        );
-        netif = netif->next;
-    }
-}
 
 void wifi_init_ap() {
     printf("[wifi] wifi_init_ap reached\n");
@@ -51,7 +27,7 @@ void wifi_init_ap() {
     );
 
     printf("[wifi] AP started: ssid=GP2040-Config auth=WPA2-PSK\n");
-    log_network_interfaces();
+    printf("[wifi] expected AP IP: 192.168.4.1\n");
 
     httpd_init();
     printf(
