@@ -6,7 +6,9 @@
 #include "lwip/apps/httpd.h"
 #include "lwip/timeouts.h"
 
+extern "C" {
 #include "fs.h"
+}
 
 #include <stdio.h>
 
