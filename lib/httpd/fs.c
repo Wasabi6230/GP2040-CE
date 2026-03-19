@@ -44,7 +44,7 @@
 #if HTTPD_USE_CUSTOM_FSDATA
 #include "fsdata_custom.c"
 #else /* HTTPD_USE_CUSTOM_FSDATA */
-#include "../../src/wifi/fsdata.c"
+#include "fsdata.c"
 #endif /* HTTPD_USE_CUSTOM_FSDATA */
 
 /*-----------------------------------------------------------------------------------*/
@@ -178,4 +178,37 @@ int
 fs_bytes_left(struct fs_file *file)
 {
   return file->len - file->index;
+}
+
+/*-----------------------------------------------------------------------------------*/
+int
+fs_debug_numfiles(void)
+{
+  return FS_NUMFILES;
+}
+
+/*-----------------------------------------------------------------------------------*/
+const char *
+fs_debug_root_name(void)
+{
+  return (FS_ROOT != NULL) ? (const char *)FS_ROOT->name : NULL;
+}
+
+/*-----------------------------------------------------------------------------------*/
+int
+fs_debug_has_file(const char *name)
+{
+  const struct fsdata_file *f;
+
+  if (name == NULL) {
+    return 0;
+  }
+
+  for (f = FS_ROOT; f != NULL; f = f->next) {
+    if (!strcmp(name, (const char *)f->name)) {
+      return 1;
+    }
+  }
+
+  return 0;
 }

@@ -35,6 +35,10 @@
 #include "lwip/opt.h"
 #include "lwip/err.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** Set this to 1 and provide the functions:
  * - "int fs_open_custom(struct fs_file *file, const char *name)"
  *    Called first for every opened file to allow opening files
@@ -127,6 +131,9 @@ int fs_read(struct fs_file *file, char *buffer, int count);
 int fs_is_file_ready(struct fs_file *file, fs_wait_cb callback_fn, void *callback_arg);
 #endif /* LWIP_HTTPD_FS_ASYNC_READ */
 int fs_bytes_left(struct fs_file *file);
+int fs_debug_numfiles(void);
+const char *fs_debug_root_name(void);
+int fs_debug_has_file(const char *name);
 
 #if LWIP_HTTPD_FILE_STATE
 /** This user-defined function is called when a file is opened. */
@@ -134,5 +141,9 @@ void *fs_state_init(struct fs_file *file, const char *name);
 /** This user-defined function is called when a file is closed. */
 void fs_state_free(struct fs_file *file, void *state);
 #endif /* #if LWIP_HTTPD_FILE_STATE */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __FS_H__ */

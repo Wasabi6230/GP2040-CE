@@ -59,7 +59,9 @@ const hexBytesPerLine = 16;
 
 function getFiles(dir) {
 	let results = [];
-	const list = fs.readdirSync(dir, { withFileTypes: true });
+	const list = fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) =>
+		a.name.localeCompare(b.name),
+	);
 	for (const file of list) {
 		file.path = dir + '/' + file.name;
 		if (file.isDirectory()) {
@@ -128,6 +130,24 @@ function createHexString(value, prependComment = false) {
 }
 
 function makefsdata() {
+	if (!fs.existsSync(buildPath)) {
+		throw new Error(`build output not found at ${buildPath}; run the production web build first`);
+	}
+
+	const indexPath = path.join(buildPath, 'index.html');
+	if (!fs.existsSync(indexPath)) {
+		throw new Error(`missing ${indexPath}; expected Vite production output`);
+	}
+
+	const indexHtml = fs.readFileSync(indexPath, 'utf8');
+	if (
+		indexHtml.includes('/src/') ||
+		indexHtml.includes('@vite/client') ||
+		indexHtml.includes('localhost:')
+	) {
+		throw new Error('build/index.html still looks like a development page; refusing to embed non-production web UI');
+	}
+
 	let fsdata = '';
 	fsdata += '#include "fsdata.h"\n';
 	fsdata += '\n';
@@ -157,12 +177,17 @@ function makefsdata() {
 	let payloadAlignmentDummyCounter = 0;
 
 	const fileInfos = [];
+	const fileDataEntries = [];
 
 	getFiles(buildPath).forEach((file) => {
 		const ext = getLowerCaseFileExtension(file);
 
 		const qualifiedName = '/' + path.relative(buildPath, file).replace(/\\/g, '/');
 		const varName = fixFilenameForC(qualifiedName);
+		const aliases = [qualifiedName];
+		if (qualifiedName === '/index.html') {
+			aliases.push('/');
+		}
 
 		fsdata += '#if FSDATA_FILE_ALIGNMENT==1\n';
 		fsdata += `static const unsigned int dummy_align_${varName} = ${payloadAlignmentDummyCounter++};\n`;
@@ -195,17 +220,7 @@ function makefsdata() {
 			console.log(`Skipping compression of ${qualifiedName} by file extension`);
 		}
 
-		const qualifiedNameLength = CStringLength(qualifiedName) + 1;
-		const paddedQualifiedNameLength =
-			Math.ceil(qualifiedNameLength / payloadAlignment) * payloadAlignment;
-		// Zero terminate the qualified name and pad it to the next multiple of payloadAlignment
-		const paddedQualifiedName =
-			qualifiedName +
-			'\0'.repeat(1 + paddedQualifiedNameLength - qualifiedNameLength);
 		fsdata += `static const unsigned char data_${varName}[] FSDATA_ALIGN_PRE = {\n`;
-		fsdata += `/* ${qualifiedName} (${qualifiedNameLength} chars) */\n`;
-		fsdata += createHexString(paddedQualifiedName, false);
-		fsdata += '\n';
 		fsdata += '/* HTTP header */\n';
 		fsdata += createHexString('HTTP/1.0 200 OK\r\n', true);
 		fsdata += createHexString(`Server: ${serverHeader}\r\n`, true);
@@ -228,20 +243,45 @@ function makefsdata() {
 		fsdata += createHexString(isCompressed ? compressed : fileContent);
 		fsdata += '};\n\n';
 
-		fileInfos.push({
+		fileDataEntries.push({
 			varName,
-			paddedQualifiedNameLength,
 			isSsiFile: shtmlExtensions.has(ext),
+		});
+
+		aliases.forEach((alias) => {
+			fileInfos.push({
+				qualifiedName: alias,
+				varName: alias === qualifiedName ? varName : fixFilenameForC(alias),
+				dataVarName: varName,
+				paddedQualifiedNameLength:
+					Math.ceil((CStringLength(alias) + 1) / payloadAlignment) * payloadAlignment,
+				isSsiFile: shtmlExtensions.has(ext),
+			});
 		});
 	});
 
 	let prevFile = 'NULL';
 	fileInfos.forEach((fileInfo) => {
+		const aliasVarName =
+			fileInfo.varName === fileInfo.dataVarName
+				? fileInfo.varName
+				: `${fileInfo.varName}_alias`;
+		const paddedQualifiedName =
+			fileInfo.qualifiedName +
+			'\0'.repeat(
+				1 +
+					fileInfo.paddedQualifiedNameLength -
+					(CStringLength(fileInfo.qualifiedName) + 1),
+			);
+		fsdata += `static const unsigned char name_${aliasVarName}[] = {\n`;
+		fsdata += `/* ${fileInfo.qualifiedName} (${CStringLength(fileInfo.qualifiedName) + 1} chars) */\n`;
+		fsdata += createHexString(paddedQualifiedName, false);
+		fsdata += '};\n\n';
 		fsdata += `const struct fsdata_file file_${fileInfo.varName}[] = {{\n`;
 		fsdata += `file_${prevFile},\n`;
-		fsdata += `data_${fileInfo.varName},\n`;
-		fsdata += `data_${fileInfo.varName} + ${fileInfo.paddedQualifiedNameLength},\n`;
-		fsdata += `sizeof(data_${fileInfo.varName}) - ${fileInfo.paddedQualifiedNameLength},\n`;
+		fsdata += `name_${aliasVarName},\n`;
+		fsdata += `data_${fileInfo.dataVarName},\n`;
+		fsdata += `sizeof(data_${fileInfo.dataVarName}),\n`;
 		fsdata += `FS_FILE_FLAGS_HEADER_INCLUDED | ${
 			fileInfo.isSsiFile
 				? 'FS_FILE_FLAGS_SSI'
@@ -256,6 +296,9 @@ function makefsdata() {
 	fsdata += `#define FS_NUMFILES ${fileInfos.length}\n`;
 
 	fs.writeFileSync(fsdataPath, fsdata, 'utf8');
+	console.log(
+		`Generated ${fsdataPath} from ${fileDataEntries.length} build files (${fileInfos.length} HTTP paths including aliases); root alias present=${fileInfos.some((fileInfo) => fileInfo.qualifiedName === '/')}`,
+	);
 }
 
 makefsdata();
