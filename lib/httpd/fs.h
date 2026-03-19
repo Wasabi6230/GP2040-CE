@@ -127,6 +127,9 @@ int fs_read(struct fs_file *file, char *buffer, int count);
 int fs_is_file_ready(struct fs_file *file, fs_wait_cb callback_fn, void *callback_arg);
 #endif /* LWIP_HTTPD_FS_ASYNC_READ */
 int fs_bytes_left(struct fs_file *file);
+int fs_debug_numfiles(void);
+const char *fs_debug_root_name(void);
+int fs_debug_has_file(const char *name);
 
 #if LWIP_HTTPD_FILE_STATE
 /** This user-defined function is called when a file is opened. */
